@@ -13,16 +13,25 @@
     <modelVersion>4.0.0</modelVersion>
 
     <dependencies>
-        <!-- lombok -->
+        <!-- dao -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>com.orion.bridge</groupId>
+            <artifactId>orion-bridge-dao</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
-        <!-- orion-kit -->
+        <!-- rpc -->
         <dependency>
-            <groupId>io.github.lijiahangmax</groupId>
-            <artifactId>orion-all</artifactId>
+            <groupId>com.orion.bridge</groupId>
+            <artifactId>orion-bridge-rpc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- model -->
+        <dependency>
+            <groupId>com.orion.bridge</groupId>
+            <artifactId>orion-bridge-model</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

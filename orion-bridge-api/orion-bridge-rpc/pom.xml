@@ -19,10 +19,10 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- orion-kit -->
+        <!-- swagger -->
         <dependency>
-            <groupId>io.github.lijiahangmax</groupId>
-            <artifactId>orion-all</artifactId>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
         </dependency>
     </dependencies>
 

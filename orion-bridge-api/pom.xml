@@ -14,7 +14,7 @@
     <version>2.0.0</version>
     <packaging>pom</packaging>
     <modelVersion>4.0.0</modelVersion>
-    <url>https://github.com/lijiahangmax/orion-ops</url>
+    <url>https://github.com/lijiahangmax/orion-bridge</url>
     <modules>
         <module>orion-bridge-common</module>
         <module>orion-bridge-model</module>
