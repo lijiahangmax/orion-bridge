@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.orion.bridge</groupId>
+        <artifactId>orion-bridge-api</artifactId>
+        <version>2.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <name>orion-bridge-rpc</name>
+    <artifactId>orion-bridge-rpc</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+
+    <dependencies>
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- orion-kit -->
+        <dependency>
+            <groupId>io.github.lijiahangmax</groupId>
+            <artifactId>orion-all</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
