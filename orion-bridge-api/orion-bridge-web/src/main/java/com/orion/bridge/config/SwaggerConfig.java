@@ -37,9 +37,6 @@ public class SwaggerConfig {
     @Value("${login.token.header}")
     private String loginTokenHeader;
 
-    @Value("${expose.api.access.header}")
-    private String accessTokenHeader;
-
     @Bean
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -73,8 +70,7 @@ public class SwaggerConfig {
      */
     private List<SecurityScheme> getSecuritySchemes() {
         ApiKey loginToken = new ApiKey(loginTokenHeader, loginTokenHeader, "header");
-        ApiKey accessToken = new ApiKey(accessTokenHeader, accessTokenHeader, "header");
-        return Lists.of(loginToken, accessToken);
+        return Lists.of(loginToken);
     }
 
 }

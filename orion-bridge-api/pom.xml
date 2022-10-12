@@ -30,6 +30,7 @@
         <java.version>1.8</java.version>
         <lombok.version>1.18.20</lombok.version>
         <spring.boot.version>2.5.1</spring.boot.version>
+        <dubbo.version>2.7.18</dubbo.version>
         <mybatis.plus.version>3.4.0</mybatis.plus.version>
         <mysql.connector.version>8.0.25</mysql.connector.version>
         <jedis.version>3.6.0</jedis.version>
@@ -109,6 +110,23 @@
                 <artifactId>spring-boot-starter-test</artifactId>
                 <version>${spring.boot.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- dubbo -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-registry-redis</artifactId>
+                <version>${dubbo.version}</version>
             </dependency>
 
             <!-- redis -->
