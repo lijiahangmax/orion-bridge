@@ -3,8 +3,7 @@
  * 按需引入组件库样式
  * https://github.com/anncwb/vite-plugin-style-import
  */
-
-import styleImport from 'vite-plugin-style-import';
+import styleImport from 'vite-plugin-style-import'
 
 export default function configStyleImportPlugin() {
   const styleImportPlugin = styleImport({
@@ -44,8 +43,8 @@ export default function configStyleImportPlugin() {
             'doption',
             'option',
             'optgroup',
-            'icon',
-          ];
+            'icon'
+          ]
           // List of components that need to map imported styles
           // 需要映射引入样式的组件列表
           const replaceList = {
@@ -69,18 +68,19 @@ export default function configStyleImportPlugin() {
             'col': 'grid', // 'grid/col.less'
             'avatar-group': 'avatar',
             'image-preview': 'image',
-            'image-preview-group': 'image',
-          };
-          if (ignoreList.includes(name)) return '';
+            'image-preview-group': 'image'
+          }
+          if (ignoreList.includes(name)) return ''
           // eslint-disable-next-line no-prototype-builtins
           return replaceList.hasOwnProperty(name)
+            // @ts-ignore
             ? `@arco-design/web-vue/es/${replaceList[name]}/style/css.js`
-            : `@arco-design/web-vue/es/${name}/style/css.js`;
+            : `@arco-design/web-vue/es/${name}/style/css.js`
           // less
           // return `@arco-design/web-vue/es/${name}/style/index.js`;
-        },
-      },
-    ],
-  });
-  return styleImportPlugin;
+        }
+      }
+    ]
+  })
+  return styleImportPlugin
 }
