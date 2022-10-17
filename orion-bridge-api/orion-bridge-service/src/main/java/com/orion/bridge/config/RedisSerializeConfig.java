@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
- * redis 序列化配置信息
+ * redis 序列化配置
  *
  * @author Jiahang Li
  * @version 1.0.0

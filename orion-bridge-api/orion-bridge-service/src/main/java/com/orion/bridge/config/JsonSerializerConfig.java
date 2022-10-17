@@ -12,7 +12,7 @@ import org.springframework.http.MediaType;
 import java.util.List;
 
 /**
- * json序列化器
+ * json 序列化配置
  *
  * @author Jiahang Li
  * @version 1.0.0

@@ -1,8 +1,6 @@
 package com.orion.bridge.utils;
 
 import com.orion.bridge.constant.PropertiesConst;
-import com.orion.lang.utils.Arrays1;
-import com.orion.lang.utils.Strings;
 import com.orion.lang.utils.codec.Base62s;
 import com.orion.lang.utils.crypto.Signatures;
 import com.orion.lang.utils.crypto.enums.PaddingMode;
@@ -10,7 +8,6 @@ import com.orion.lang.utils.crypto.enums.WorkingMode;
 import com.orion.lang.utils.crypto.symmetric.EcbSymmetric;
 import com.orion.lang.utils.crypto.symmetric.SymmetricBuilder;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -148,68 +145,6 @@ public class ValueMix {
      */
     public static String encPassword(String password, String salt) {
         return Signatures.md5(password, salt, 3);
-    }
-
-    /**
-     * 密码验签
-     *
-     * @param password password
-     * @param salt     salt
-     * @param sign     密码签名
-     * @return 是否正确
-     */
-    public static boolean validPassword(String password, String salt, String sign) {
-        return sign.equals(Signatures.md5(password, salt, 3));
-    }
-
-    /**
-     * 创建登录token
-     *
-     * @param uid       uid
-     * @param timestamp 时间戳
-     * @return token
-     */
-    public static String createLoginToken(Long uid, Long timestamp) {
-        return ValueMix.base62ecbEnc(uid + "_" + timestamp, PropertiesConst.VALUE_MIX_SECRET_KEY);
-    }
-
-    /**
-     * 检查loginToken是否合法
-     *
-     * @param token token
-     * @return true合法
-     */
-    public static boolean validLoginToken(String token) {
-        return ValueMix.base62ecbDec(token, PropertiesConst.VALUE_MIX_SECRET_KEY) != null;
-    }
-
-    /**
-     * 获取loginToken的uid
-     *
-     * @param token token
-     * @return uid
-     */
-    public static Long getLoginTokenUserId(String token) {
-        return Optional.ofNullable(ValueMix.base62ecbDec(token, PropertiesConst.VALUE_MIX_SECRET_KEY))
-                .map(s -> s.split("_"))
-                .map(s -> s[0])
-                .filter(Strings::isInteger)
-                .map(Long::valueOf)
-                .orElse(null);
-    }
-
-    /**
-     * 获取loginToken的信息
-     *
-     * @param token token
-     * @return [uid, loginTimestamp]
-     */
-    public static Long[] getLoginTokenInfo(String token) {
-        return Optional.ofNullable(ValueMix.base62ecbDec(token, PropertiesConst.VALUE_MIX_SECRET_KEY))
-                .map(s -> s.split("_"))
-                .filter(s -> Arrays.stream(s).allMatch(Strings::isInteger))
-                .map(s -> Arrays1.mapper(s, Long[]::new, Long::valueOf))
-                .orElse(null);
     }
 
 }
