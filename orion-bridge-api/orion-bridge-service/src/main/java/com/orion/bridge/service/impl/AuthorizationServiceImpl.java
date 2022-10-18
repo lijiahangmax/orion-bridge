@@ -10,21 +10,21 @@ import com.orion.bridge.dao.UserInfoDAO;
 import com.orion.bridge.dao.UserLoginLogDAO;
 import com.orion.bridge.entity.domain.UserInfoDO;
 import com.orion.bridge.entity.domain.UserLoginLogDO;
+import com.orion.bridge.model.dto.AuthorizationTokenDTO;
 import com.orion.bridge.model.dto.UserBindDTO;
 import com.orion.bridge.model.dto.UserDTO;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
 import com.orion.bridge.service.api.AuthorizationService;
-import com.orion.bridge.utils.Currents;
-import com.orion.bridge.utils.LoginUtils;
-import com.orion.bridge.utils.Utils;
-import com.orion.bridge.utils.Valid;
+import com.orion.bridge.utils.*;
 import com.orion.lang.utils.Strings;
+import com.orion.lang.utils.collect.Lists;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -123,7 +123,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         // 设置登陆缓存
         long expire = Long.parseLong(SystemConfig.LOGIN_TOKEN_EXPIRE.getValue());
         String userInfoKey = Strings.format(CacheKeys.AUTHORIZATION_INFO_KEY, id);
-        redisTemplate.opsForValue().set(userInfoKey, JSON.toJSONString(userCache), expire, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(userInfoKey, JSON.toJSONString(userCache));
+        // 单端登录删除已绑定的缓存
+        this.deleteBindTokenWithSimpleLogin(id);
         // 设置绑定缓存
         String loginBindKey = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, timestamp);
         redisTemplate.opsForValue().set(loginBindKey, JSON.toJSONString(bind), expire, TimeUnit.HOURS);
@@ -152,6 +154,36 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public void resetPassword(AuthorizationRequest request) {
 
+    }
+
+    @Override
+    public UserDTO getUserByToken(String token, String address) {
+        // 获取 token 信息
+        AuthorizationTokenDTO tokenInfo = LoginUtils.getLoginTokenInfo(token);
+        if (tokenInfo == null) {
+            return null;
+        }
+        // 获取用户缓存信息
+        Long id = tokenInfo.getId();
+        String authInfo = redisTemplate.opsForValue().get(Strings.format(CacheKeys.AUTHORIZATION_INFO_KEY, id));
+        if (authInfo == null) {
+            return null;
+        }
+        String bindInfo = redisTemplate.opsForValue().get(Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, tokenInfo.getTimestamp()));
+        if (bindInfo == null) {
+            return null;
+        }
+        // 检查绑定ip
+        UserBindDTO bind = JSON.parseObject(bindInfo, UserBindDTO.class);
+        if (String.valueOf(Const.ENABLE).equals(SystemConfig.LOGIN_BIND_ADDRESS.getValue())) {
+            if (address != null && !bind.getAddress().equals(address)) {
+                return null;
+            }
+        }
+        // 返回
+        UserDTO user = JSON.parseObject(authInfo, UserDTO.class);
+        user.setCurrentTimestamp(bind.getTimestamp());
+        return user;
     }
 
     /**
@@ -238,6 +270,33 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         update.setId(id);
         update.setLastLoginTime(new Date());
         userInfoDAO.updateById(update);
+    }
+
+    /**
+     * 单设备登录 清空已绑定 token
+     *
+     * @param id id
+     */
+    private void deleteBindTokenWithSimpleLogin(Long id) {
+        // 多端登录则跳过
+        if (String.valueOf(Const.ENABLE).equals(SystemConfig.ALLOW_MULTIPLE_LOGIN.getValue())) {
+            return;
+        }
+        // 单端登录 删除绑定缓存
+        this.deleteBindToken(id);
+    }
+
+    /**
+     * 清空已绑定 token
+     *
+     * @param id id
+     */
+    private void deleteBindToken(Long id) {
+        String scanMatches = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, "*");
+        Set<String> bindTokens = RedisUtils.scanKeys(redisTemplate, scanMatches, Const.N_10000);
+        if (!Lists.isEmpty(bindTokens)) {
+            redisTemplate.delete(bindTokens);
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package com.orion.bridge.service.api;
 
+import com.orion.bridge.model.dto.UserDTO;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
 
@@ -31,5 +32,14 @@ public interface AuthorizationService {
      * @param request request
      */
     void resetPassword(AuthorizationRequest request);
+
+    /**
+     * 通过 token 获取用户信息
+     *
+     * @param token   token
+     * @param address address
+     * @return user
+     */
+    UserDTO getUserByToken(String token, String address);
 
 }

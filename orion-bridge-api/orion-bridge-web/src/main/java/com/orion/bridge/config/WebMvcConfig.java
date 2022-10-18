@@ -1,15 +1,17 @@
 package com.orion.bridge.config;
 
 import com.orion.bridge.constant.MessageConst;
+import com.orion.bridge.interceptor.AuthenticateInterceptor;
 import com.orion.lang.define.wrapper.HttpWrapper;
-import com.orion.lang.exception.*;
+import com.orion.lang.exception.ApplicationException;
+import com.orion.lang.exception.DecryptException;
+import com.orion.lang.exception.EncryptException;
+import com.orion.lang.exception.IORuntimeException;
 import com.orion.lang.exception.argument.CodeArgumentException;
 import com.orion.lang.exception.argument.HttpWrapperException;
 import com.orion.lang.exception.argument.InvalidArgumentException;
 import com.orion.lang.exception.argument.RpcWrapperException;
-import com.orion.lang.utils.Exceptions;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.EncryptedDocumentException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -26,7 +27,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.sql.SQLException;
 
 /**
@@ -43,18 +43,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     // @Resource
     // private IpFilterInterceptor ipFilterInterceptor;
-    //
-    // @Resource
-    // private AuthenticateInterceptor authenticateInterceptor;
-    //
+
+    @Resource
+    private AuthenticateInterceptor authenticateInterceptor;
+
     // @Resource
     // private RoleInterceptor roleInterceptor;
     //
     // @Resource
     // private UserActiveInterceptor userActiveInterceptor;
     //
-    // @Resource
-    // private ExposeApiHeaderInterceptor exposeApiHeaderInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -62,10 +60,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // registry.addInterceptor(ipFilterInterceptor)
         //         .addPathPatterns("/**")
         //         .order(5);
-        // // 认证拦截器
-        // registry.addInterceptor(authenticateInterceptor)
-        //         .addPathPatterns("/orion/api/**")
-        //         .order(10);
+        // 认证拦截器
+        registry.addInterceptor(authenticateInterceptor)
+                .addPathPatterns("/orion/bridge-api/**")
+                .order(10);
         // // 权限拦截器
         // registry.addInterceptor(roleInterceptor)
         //         .addPathPatterns("/orion/api/**")
@@ -75,21 +73,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
         //         .addPathPatterns("/orion/api/**")
         //         .excludePathPatterns("/orion/api/auth/**")
         //         .order(30);
-        // // 暴露服务请求头拦截器
-        // registry.addInterceptor(exposeApiHeaderInterceptor)
-        //         .addPathPatterns("/orion/expose-api/**")
-        //         .order(40);
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // 暴露服务允许跨域
-        registry.addMapping("/orion/expose-api/**")
-                .allowCredentials(true)
-                .allowedOriginPatterns("*")
-                .allowedMethods("*")
-                .allowedHeaders("*")
-                .maxAge(3600);
+        // registry.addMapping("/orion/bridge-api/**")
+        //         .allowCredentials(true)
+        //         .allowedOriginPatterns("*")
+        //         .allowedMethods("*")
+        //         .allowedHeaders("*")
+        //         .maxAge(3600);
     }
 
     @ExceptionHandler(value = Exception.class)
@@ -117,13 +110,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         return HttpWrapper.error(MessageConst.INVALID_PARAM);
     }
 
-    @ExceptionHandler(value = {HttpRequestException.class})
-    public HttpWrapper<?> httpApiRequestExceptionHandler(HttpServletRequest request, Exception ex) {
-        log.error("httpApiRequestExceptionHandler url: {}, http-api请求异常: {}, message: {}", request.getRequestURI(), ex.getClass(), ex.getMessage(), ex);
-        return HttpWrapper.error(MessageConst.HTTP_API);
-    }
-
-    @ExceptionHandler(value = {InvalidArgumentException.class, IllegalArgumentException.class, DisabledException.class})
+    @ExceptionHandler(value = {InvalidArgumentException.class, IllegalArgumentException.class})
     public HttpWrapper<?> invalidArgumentExceptionHandler(HttpServletRequest request, Exception ex) {
         log.error("invalidArgumentExceptionHandler url: {}, 参数异常: {}, message: {}", request.getRequestURI(), ex.getClass(), ex.getMessage(), ex);
         return HttpWrapper.error(ex.getMessage());
@@ -151,12 +138,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public HttpWrapper<?> decryptExceptionHandler(HttpServletRequest request, Exception ex) {
         log.error("decryptExceptionHandler url: {}, 数据解密异常: {}, message: {}", request.getRequestURI(), ex.getClass(), ex.getMessage(), ex);
         return HttpWrapper.error(MessageConst.DECRYPT_ERROR).data(ex.getMessage());
-    }
-
-    @ExceptionHandler(value = {InterruptedException.class, InterruptedRuntimeException.class, InterruptedIOException.class})
-    public HttpWrapper<?> interruptExceptionHandler(HttpServletRequest request, Exception ex) {
-        log.error("interruptExceptionHandler url: {}, interrupt异常: {}, message: {}", request.getRequestURI(), ex.getClass(), ex.getMessage(), ex);
-        return HttpWrapper.error(MessageConst.INTERRUPT_ERROR).data(ex.getMessage());
     }
 
     @ExceptionHandler(value = CodeArgumentException.class)

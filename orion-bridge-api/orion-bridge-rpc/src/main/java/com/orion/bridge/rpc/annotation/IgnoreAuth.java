@@ -1,4 +1,4 @@
-package com.orion.bridge.annotation;
+package com.orion.bridge.rpc.annotation;
 
 import java.lang.annotation.*;
 

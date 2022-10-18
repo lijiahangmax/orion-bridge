@@ -1,9 +1,9 @@
-package com.orion.bridge.annotation;
+package com.orion.bridge.rpc.annotation;
 
 import java.lang.annotation.*;
 
 /**
- * 需要超级管理员角色
+ * 用户事件注解
  *
  * @author Jiahang Li
  * @version 1.0.0
@@ -12,6 +12,11 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RequireAdminRole {
+public @interface EventLog {
+
+    /**
+     * @return 事件类型
+     */
+    int value();
 
 }

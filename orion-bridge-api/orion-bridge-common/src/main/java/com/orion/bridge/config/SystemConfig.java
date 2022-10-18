@@ -1,8 +1,6 @@
 package com.orion.bridge.config;
 
 import com.orion.bridge.constant.Const;
-import com.orion.lang.utils.Objects1;
-import com.orion.lang.utils.Strings;
 import lombok.Getter;
 
 /**
@@ -19,6 +17,11 @@ public enum SystemConfig {
      * 是否允许多端登陆
      */
     ALLOW_MULTIPLE_LOGIN(Const.ENABLE),
+
+    /**
+     * 登陆绑定ip
+     */
+    LOGIN_BIND_ADDRESS(Const.DISABLE),
 
     /**
      * 登陆凭证有效期 (时)
@@ -60,7 +63,7 @@ public enum SystemConfig {
         this.value = value;
     }
 
-    public static SystemConfig of(String key){
+    public static SystemConfig of(String key) {
         if (key == null) {
             return null;
         }

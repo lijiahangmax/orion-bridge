@@ -14,32 +14,17 @@ public enum ResultCode implements CodeInfo {
     /**
      * 未认证
      */
-    UNAUTHORIZED(700, com.orion.bridge.constant.MessageConst.UNAUTHORIZED),
+    UNAUTHORIZED(700, MessageConst.UNAUTHORIZED),
 
     /**
      * 无权限
      */
-    NO_PERMISSION(710, com.orion.bridge.constant.MessageConst.NO_PERMISSION),
-
-    /**
-     * 文件未找到
-     */
-    FILE_MISSING(720, com.orion.bridge.constant.MessageConst.FILE_MISSING),
+    NO_PERMISSION(710, MessageConst.NO_PERMISSION),
 
     /**
      * IP封禁
      */
-    IP_BAN(730, com.orion.bridge.constant.MessageConst.IP_BAN),
-
-    /**
-     * 用户禁用
-     */
-    USER_DISABLED(740, com.orion.bridge.constant.MessageConst.USER_DISABLED),
-
-    /**
-     * 非法访问
-     */
-    ILLEGAL_ACCESS(750, com.orion.bridge.constant.MessageConst.ILLEGAL_ACCESS),
+    IP_BAN(720, MessageConst.IP_BAN),
 
     ;
 

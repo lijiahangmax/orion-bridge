@@ -1,14 +1,12 @@
 package com.orion.bridge.controller;
 
-import com.orion.bridge.annotation.EventLog;
-import com.orion.bridge.annotation.IgnoreAuth;
+import com.orion.bridge.rpc.annotation.IgnoreAuth;
 import com.orion.bridge.annotation.RestWrapper;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
 import com.orion.bridge.service.api.AuthorizationService;
 import com.orion.bridge.utils.Valid;
 import com.orion.lang.define.wrapper.HttpWrapper;
-import com.orion.lang.utils.Objects1;
 import com.orion.web.servlet.web.Servlets;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
