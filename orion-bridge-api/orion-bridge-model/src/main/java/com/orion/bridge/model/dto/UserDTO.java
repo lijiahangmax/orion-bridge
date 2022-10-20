@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 
 /**
+ * 用户信息
+ *
  * @author Jiahang Li
  * @version 1.0.0
  * @since 2022/10/17 14:46
@@ -15,7 +17,6 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value = "用户信息")
-@SuppressWarnings("ALL")
 public class UserDTO implements Serializable {
 
     @ApiModelProperty(value = "用户id")

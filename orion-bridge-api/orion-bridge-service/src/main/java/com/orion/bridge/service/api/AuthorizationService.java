@@ -3,6 +3,10 @@ package com.orion.bridge.service.api;
 import com.orion.bridge.model.dto.UserDTO;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
+import com.orion.bridge.model.vo.AuthorizedDeviceVO;
+import com.orion.bridge.model.vo.LoginHistoryVO;
+
+import java.util.List;
 
 /**
  * 认证服务
@@ -45,7 +49,29 @@ public interface AuthorizationService {
      *
      * @return 用户验证信息
      */
-    AuthorizationVO validAuthorized();
+    AuthorizationVO checkAuthorized();
+
+    /**
+     * 获取认证设备
+     *
+     * @return rows
+     */
+    List<AuthorizedDeviceVO> getAuthorizedDevices();
+
+    /**
+     * 下线认证设备
+     *
+     * @param timestamp timestamp
+     */
+    void offlineDevice(Long timestamp);
+
+    /**
+     * 获取登陆历史
+     *
+     * @param limit limit
+     * @return rows
+     */
+    List<LoginHistoryVO> getLoginHistory(Long limit);
 
     /**
      * 通过 token 获取用户信息

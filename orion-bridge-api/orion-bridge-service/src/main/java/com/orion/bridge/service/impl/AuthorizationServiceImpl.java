@@ -6,6 +6,7 @@ import com.orion.bridge.config.CacheKeys;
 import com.orion.bridge.config.SystemConfig;
 import com.orion.bridge.constant.Const;
 import com.orion.bridge.constant.MessageConst;
+import com.orion.bridge.constant.ResultCode;
 import com.orion.bridge.dao.UserInfoDAO;
 import com.orion.bridge.dao.UserLoginLogDAO;
 import com.orion.bridge.entity.domain.UserInfoDO;
@@ -15,17 +16,22 @@ import com.orion.bridge.model.dto.UserBindDTO;
 import com.orion.bridge.model.dto.UserDTO;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
+import com.orion.bridge.model.vo.AuthorizedDeviceVO;
+import com.orion.bridge.model.vo.LoginHistoryVO;
 import com.orion.bridge.service.api.AuthorizationService;
 import com.orion.bridge.utils.*;
+import com.orion.lang.utils.Exceptions;
 import com.orion.lang.utils.Strings;
 import com.orion.lang.utils.collect.Lists;
+import com.orion.lang.utils.convert.Converts;
+import com.orion.lang.utils.time.Dates;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 认证服务实现
@@ -153,17 +159,86 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public void resetMinePassword(AuthorizationRequest request) {
-
+        Long id = Currents.getUserId();
+        // 查询用户信息
+        UserInfoDO user = Valid.notNull(userInfoDAO.selectById(id));
+        // 验证原密码
+        boolean validPassword = LoginUtils.validPassword(request.getBeforePassword(), user.getSalt(), user.getPassword());
+        Valid.isTrue(validPassword, MessageConst.BEFORE_PASSWORD_ERROR);
+        // 修改密码
+        this.updatePassword(user, request.getPassword());
     }
 
     @Override
     public void resetOtherPassword(AuthorizationRequest request) {
-
+        Long currentUserId = Currents.getUserId();
+        Long id = request.getId();
+        Valid.eq(currentUserId, id, MessageConst.UNSAFE_OPERATOR);
+        // 查询用户信息
+        UserInfoDO user = Valid.notNull(userInfoDAO.selectById(id));
+        // 修改密码
+        this.updatePassword(user, request.getPassword());
     }
 
     @Override
-    public AuthorizationVO validAuthorized() {
-        return null;
+    public AuthorizationVO checkAuthorized() {
+        Long id = Currents.getUserId();
+        // 查询缓存数据
+        String authInfo = redisTemplate.opsForValue().get(Strings.format(CacheKeys.AUTHORIZATION_INFO_KEY, id));
+        if (authInfo == null) {
+            throw Exceptions.httpWrapper(ResultCode.UNAUTHORIZED.cast());
+        }
+        return Converts.to(JSON.parseObject(authInfo, UserDTO.class), AuthorizationVO.class);
+    }
+
+    @Override
+    public List<AuthorizedDeviceVO> getAuthorizedDevices() {
+        UserDTO user = Currents.getUser();
+        Long id = user.getId();
+        // 获取绑定的token
+        Set<String> bindTokens = this.findBindTokens(id);
+        if (Lists.isEmpty(bindTokens)) {
+            return Lists.empty();
+        }
+        // 获取过期时间
+        Map<Long, String> expireMapping = bindTokens.stream().collect(Collectors.toMap(s -> {
+            return Long.valueOf(s.split(":")[3]);
+        }, s -> {
+            return Optional.ofNullable(s)
+                    .map(redisTemplate::getExpire)
+                    .map(e -> e * Dates.SECOND_STAMP)
+                    .map(Utils::interval)
+                    .orElse(null);
+        }));
+        // 封装数据
+        List<AuthorizedDeviceVO> devices = bindTokens.stream()
+                .map(s -> JSON.parseObject(s, UserBindDTO.class))
+                .sorted(Comparator.comparing(UserBindDTO::getTimestamp).reversed())
+                .map(s -> Converts.to(s, AuthorizedDeviceVO.class))
+                .collect(Collectors.toList());
+        // 设置过期时间
+        devices.forEach(s -> {
+            s.setExpireTime(expireMapping.get(s.getTimestamp()));
+            s.setCurrentTimestamp(user.getCurrentTimestamp());
+        });
+        return devices;
+    }
+
+    @Override
+    public void offlineDevice(Long timestamp) {
+        String offlineKey = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, Currents.getUserId(), timestamp);
+        Valid.isTrue(redisTemplate.delete(offlineKey), MessageConst.OPERATOR_ERROR);
+    }
+
+    @Override
+    public List<LoginHistoryVO> getLoginHistory(Long limit) {
+        LambdaQueryWrapper<UserLoginLogDO> wrapper = new LambdaQueryWrapper<UserLoginLogDO>()
+                .eq(UserLoginLogDO::getUserId, Currents.getUserId())
+                .orderByDesc(UserLoginLogDO::getCreateTime)
+                .last(Const.LIMIT + Const.SPACE + limit);
+        return DataQuery.of(userLoginLogDAO)
+                .wrapper(wrapper)
+                .list(LoginHistoryVO.class);
     }
 
     @Override
@@ -194,6 +269,26 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         UserDTO user = JSON.parseObject(authInfo, UserDTO.class);
         user.setCurrentTimestamp(bind.getTimestamp());
         return user;
+    }
+
+    /**
+     * 更新密码
+     *
+     * @param user        user
+     * @param newPassword 新密码
+     */
+    private void updatePassword(UserInfoDO user, String newPassword) {
+        Long id = user.getId();
+        // 修改用户信息
+        UserInfoDO update = new UserInfoDO();
+        update.setId(id);
+        update.setLockStatus(Const.ENABLE);
+        update.setPassword(ValueMix.encPassword(newPassword, user.getSalt()));
+        userInfoDAO.updateById(update);
+        // 清理登陆失败次数
+        this.deleteAuthorizationFailCount(user.getUsername());
+        // 清理用户登陆缓存
+        this.deleteBindToken(id);
     }
 
     /**
@@ -302,11 +397,21 @@ public class AuthorizationServiceImpl implements AuthorizationService {
      * @param id id
      */
     private void deleteBindToken(Long id) {
-        String scanMatches = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, "*");
-        Set<String> bindTokens = RedisUtils.scanKeys(redisTemplate, scanMatches, Const.N_10000);
+        Set<String> bindTokens = this.findBindTokens(id);
         if (!Lists.isEmpty(bindTokens)) {
             redisTemplate.delete(bindTokens);
         }
+    }
+
+    /**
+     * 获取用户绑定 token
+     *
+     * @param id id
+     * @return token
+     */
+    private Set<String> findBindTokens(Long id) {
+        String scanMatches = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, "*");
+        return RedisUtils.scanKeys(redisTemplate, scanMatches, Const.N_10000);
     }
 
 }

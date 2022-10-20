@@ -99,7 +99,7 @@ public class Utils {
         if (ms == null) {
             return null;
         }
-        return Dates.interval(ms, false, "d ", "h ", "m ", "s");
+        return Dates.interval(ms, false, "天 ", "时 ", "分 ", "秒");
     }
 
     /**

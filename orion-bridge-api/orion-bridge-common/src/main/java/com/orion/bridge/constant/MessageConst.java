@@ -60,8 +60,6 @@ public class MessageConst {
 
     public static final String USERNAME_PRESENT = "用户名已存在";
 
-    public static final String BEFORE_PASSWORD_EMPTY = "原密码为空";
-
     public static final String BEFORE_PASSWORD_ERROR = "原密码错误";
 
     public static final String UNSAFE_OPERATOR = "不安全的操作";
@@ -75,14 +73,6 @@ public class MessageConst {
     public static final String UNKNOWN_DATA = "未查询到数据";
 
     public static final String UNKNOWN_EXPORT_TYPE = "未知的导出类型";
-
-    public static final String INVALID_MACHINE = "未知的机器";
-
-    public static final String MACHINE_DISABLE = "机器未启用";
-
-    public static final String INVALID_PROXY = "未查询到代理信息";
-
-    public static final String INVALID_PTY = "终端类型不合法";
 
     public static final String EXCEPTION_MESSAGE = "系统异常";
 

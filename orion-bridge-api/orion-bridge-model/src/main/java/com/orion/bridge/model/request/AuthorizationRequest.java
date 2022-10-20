@@ -33,4 +33,7 @@ public class AuthorizationRequest {
     @ApiModelProperty(value = "userAgent")
     private String userAgent;
 
+    @ApiModelProperty(value = "时间戳")
+    private Long timestamp;
+
 }

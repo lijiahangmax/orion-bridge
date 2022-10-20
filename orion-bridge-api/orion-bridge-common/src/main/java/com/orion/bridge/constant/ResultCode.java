@@ -1,6 +1,7 @@
 package com.orion.bridge.constant;
 
 import com.orion.lang.define.wrapper.CodeInfo;
+import com.orion.lang.define.wrapper.HttpWrapper;
 
 /**
  * wrapper 返回 code
@@ -45,6 +46,15 @@ public enum ResultCode implements CodeInfo {
     @Override
     public String message() {
         return message;
+    }
+
+    /**
+     * 转为 httpWrapper
+     *
+     * @return httpWrapper
+     */
+    public HttpWrapper<?> cast() {
+        return HttpWrapper.of(this);
     }
 
 }

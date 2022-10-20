@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
+ * 认证响应
+ *
  * @author Jiahang Li
  * @version 1.0.0
  * @since 2022/10/14 16:44
