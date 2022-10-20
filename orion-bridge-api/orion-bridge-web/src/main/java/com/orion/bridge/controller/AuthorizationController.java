@@ -1,11 +1,8 @@
 package com.orion.bridge.controller;
 
 import com.orion.bridge.annotation.RestWrapper;
-import com.orion.bridge.constant.Const;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
-import com.orion.bridge.model.vo.AuthorizedDeviceVO;
-import com.orion.bridge.model.vo.LoginHistoryVO;
 import com.orion.bridge.rpc.annotation.IgnoreAuth;
 import com.orion.bridge.service.api.AuthorizationService;
 import com.orion.bridge.utils.Valid;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 用户认证 api
@@ -78,26 +74,6 @@ public class AuthorizationController {
     @ApiOperation(value = "验证登陆-并获取用户信息")
     public AuthorizationVO checkAuthorized() {
         return authorizationService.checkAuthorized();
-    }
-
-    @GetMapping("/get-authorized-devices")
-    @ApiOperation(value = "获取认证设备")
-    public List<AuthorizedDeviceVO> getAuthorizedDevices() {
-        return authorizationService.getAuthorizedDevices();
-    }
-
-    @PostMapping("/offline")
-    @ApiOperation(value = "下线其他端账号")
-    public HttpWrapper<?> offlineDevice(@RequestBody AuthorizationRequest request) {
-        Long timestamp = Valid.notNull(request.getTimestamp());
-        authorizationService.offlineDevice(timestamp);
-        return HttpWrapper.ok();
-    }
-
-    @GetMapping("/login-history")
-    @ApiOperation(value = "登陆日志")
-    public List<LoginHistoryVO> getLoginHistory(@RequestParam(Const.LIMIT) Long limit) {
-        return authorizationService.getLoginHistory(limit);
     }
 
 }

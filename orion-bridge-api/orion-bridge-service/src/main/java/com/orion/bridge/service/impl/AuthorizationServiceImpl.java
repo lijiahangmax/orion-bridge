@@ -16,22 +16,19 @@ import com.orion.bridge.model.dto.UserBindDTO;
 import com.orion.bridge.model.dto.UserDTO;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
-import com.orion.bridge.model.vo.AuthorizedDeviceVO;
-import com.orion.bridge.model.vo.LoginHistoryVO;
 import com.orion.bridge.service.api.AuthorizationService;
 import com.orion.bridge.utils.*;
 import com.orion.lang.utils.Exceptions;
 import com.orion.lang.utils.Strings;
 import com.orion.lang.utils.collect.Lists;
 import com.orion.lang.utils.convert.Converts;
-import com.orion.lang.utils.time.Dates;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 认证服务实现
@@ -192,56 +189,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public List<AuthorizedDeviceVO> getAuthorizedDevices() {
-        UserDTO user = Currents.getUser();
-        Long id = user.getId();
-        // 获取绑定的token
-        Set<String> bindTokens = this.findBindTokens(id);
-        if (Lists.isEmpty(bindTokens)) {
-            return Lists.empty();
-        }
-        // 获取过期时间
-        Map<Long, String> expireMapping = bindTokens.stream().collect(Collectors.toMap(s -> {
-            return Long.valueOf(s.split(":")[3]);
-        }, s -> {
-            return Optional.ofNullable(s)
-                    .map(redisTemplate::getExpire)
-                    .map(e -> e * Dates.SECOND_STAMP)
-                    .map(Utils::interval)
-                    .orElse(null);
-        }));
-        // 封装数据
-        List<AuthorizedDeviceVO> devices = bindTokens.stream()
-                .map(s -> JSON.parseObject(s, UserBindDTO.class))
-                .sorted(Comparator.comparing(UserBindDTO::getTimestamp).reversed())
-                .map(s -> Converts.to(s, AuthorizedDeviceVO.class))
-                .collect(Collectors.toList());
-        // 设置过期时间
-        devices.forEach(s -> {
-            s.setExpireTime(expireMapping.get(s.getTimestamp()));
-            s.setCurrentTimestamp(user.getCurrentTimestamp());
-        });
-        return devices;
-    }
-
-    @Override
-    public void offlineDevice(Long timestamp) {
-        String offlineKey = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, Currents.getUserId(), timestamp);
-        Valid.isTrue(redisTemplate.delete(offlineKey), MessageConst.OPERATOR_ERROR);
-    }
-
-    @Override
-    public List<LoginHistoryVO> getLoginHistory(Long limit) {
-        LambdaQueryWrapper<UserLoginLogDO> wrapper = new LambdaQueryWrapper<UserLoginLogDO>()
-                .eq(UserLoginLogDO::getUserId, Currents.getUserId())
-                .orderByDesc(UserLoginLogDO::getCreateTime)
-                .last(Const.LIMIT + Const.SPACE + limit);
-        return DataQuery.of(userLoginLogDAO)
-                .wrapper(wrapper)
-                .list(LoginHistoryVO.class);
-    }
-
-    @Override
     public UserDTO getUserByToken(String token, String address) {
         // 获取 token 信息
         AuthorizationTokenDTO tokenInfo = LoginUtils.getLoginTokenInfo(token);
@@ -397,21 +344,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
      * @param id id
      */
     private void deleteBindToken(Long id) {
-        Set<String> bindTokens = this.findBindTokens(id);
+        String scanMatches = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, "*");
+        Set<String> bindTokens = RedisUtils.scanKeys(redisTemplate, scanMatches, Const.N_10000);
         if (!Lists.isEmpty(bindTokens)) {
             redisTemplate.delete(bindTokens);
         }
-    }
-
-    /**
-     * 获取用户绑定 token
-     *
-     * @param id id
-     * @return token
-     */
-    private Set<String> findBindTokens(Long id) {
-        String scanMatches = Strings.format(CacheKeys.AUTHORIZATION_BIND_KEY, id, "*");
-        return RedisUtils.scanKeys(redisTemplate, scanMatches, Const.N_10000);
     }
 
 }
