@@ -27,11 +27,25 @@ public interface AuthorizationService {
     void logout();
 
     /**
-     * 重置密码
+     * 重置密码-自己
      *
      * @param request request
      */
-    void resetPassword(AuthorizationRequest request);
+    void resetMinePassword(AuthorizationRequest request);
+
+    /**
+     * 重置密码-他人
+     *
+     * @param request request
+     */
+    void resetOtherPassword(AuthorizationRequest request);
+
+    /**
+     * 验证登陆信息
+     *
+     * @return 用户验证信息
+     */
+    AuthorizationVO validAuthorized();
 
     /**
      * 通过 token 获取用户信息

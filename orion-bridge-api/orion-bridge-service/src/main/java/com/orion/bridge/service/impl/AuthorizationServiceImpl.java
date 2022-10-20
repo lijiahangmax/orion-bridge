@@ -152,8 +152,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void resetPassword(AuthorizationRequest request) {
+    public void resetMinePassword(AuthorizationRequest request) {
 
+    }
+
+    @Override
+    public void resetOtherPassword(AuthorizationRequest request) {
+
+    }
+
+    @Override
+    public AuthorizationVO validAuthorized() {
+        return null;
     }
 
     @Override

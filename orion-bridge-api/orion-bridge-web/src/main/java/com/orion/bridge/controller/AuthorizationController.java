@@ -1,9 +1,9 @@
 package com.orion.bridge.controller;
 
-import com.orion.bridge.rpc.annotation.IgnoreAuth;
 import com.orion.bridge.annotation.RestWrapper;
 import com.orion.bridge.model.request.AuthorizationRequest;
 import com.orion.bridge.model.vo.AuthorizationVO;
+import com.orion.bridge.rpc.annotation.IgnoreAuth;
 import com.orion.bridge.service.api.AuthorizationService;
 import com.orion.bridge.utils.Valid;
 import com.orion.lang.define.wrapper.HttpWrapper;
@@ -52,8 +52,28 @@ public class AuthorizationController {
         return HttpWrapper.ok();
     }
 
-    // 重置密码
+    @PostMapping("/reset-mine")
+    @ApiOperation(value = "重置密码-自己")
+    public HttpWrapper<?> resetMinePassword(@RequestBody AuthorizationRequest request) {
+        Valid.notNull(request.getId());
+        Valid.allNotBlank(request.getPassword(), request.getBeforePassword());
+        authorizationService.resetMinePassword(request);
+        return HttpWrapper.ok();
+    }
 
-    // 验证登陆
+    @PostMapping("/reset-other")
+    @ApiOperation(value = "重置密码-他人")
+    public HttpWrapper<?> resetOtherPassword(@RequestBody AuthorizationRequest request) {
+        Valid.notNull(request.getId());
+        Valid.notBlank(request.getPassword());
+        authorizationService.resetOtherPassword(request);
+        return HttpWrapper.ok();
+    }
+
+    @PostMapping("/valid")
+    @ApiOperation(value = "验证登陆-并获取用户信息")
+    public AuthorizationVO validAuthorized() {
+        return authorizationService.validAuthorized();
+    }
 
 }
