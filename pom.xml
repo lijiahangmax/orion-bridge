@@ -22,7 +22,7 @@
         <module>orion-bridge-dao</module>
         <module>orion-bridge-rpc</module>
         <module>orion-bridge-service</module>
-        <module>orion-bridge-web</module>
+        <module>orion-bridge-api</module>
         <module>orion-bridge-common</module>
     </modules>
 

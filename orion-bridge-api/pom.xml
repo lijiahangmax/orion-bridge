@@ -8,8 +8,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <name>orion-bridge-web</name>
-    <artifactId>orion-bridge-web</artifactId>
+    <name>orion-bridge-api</name>
+    <artifactId>orion-bridge-api</artifactId>
     <modelVersion>4.0.0</modelVersion>
 
     <dependencies>
