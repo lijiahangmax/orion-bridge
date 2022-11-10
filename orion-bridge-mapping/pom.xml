@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.orion.bridge</groupId>
+        <artifactId>orion-bridge</artifactId>
+        <version>2.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <name>orion-bridge-mapping</name>
+    <artifactId>orion-bridge-mapping</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+
+    <dependencies>
+        <!-- dao -->
+        <dependency>
+            <groupId>com.orion.bridge</groupId>
+            <artifactId>orion-bridge-dao</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- rpc -->
+        <dependency>
+            <groupId>com.orion.bridge</groupId>
+            <artifactId>orion-bridge-rpc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- model -->
+        <dependency>
+            <groupId>com.orion.bridge</groupId>
+            <artifactId>orion-bridge-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>
